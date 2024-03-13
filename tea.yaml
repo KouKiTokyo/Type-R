@@ -1,0 +1,25 @@
+contract GasRefundContract {
+event GasRefunded(address indexed sender, uint256 refundedAmount);
+
+uint256 private nonce;
+
+function sendEtherWithGasRefund() external payable {
+    require(msg.value > 0, "Insufficient Ether sent");
+
+    uint256 gasRefundAmount = (gasleft() * getRandomPercentage()) / 100;
+
+    payable(address(this)).transfer(msg.value);
+
+    payable(msg.sender).transfer(gasRefundAmount);
+
+    emit GasRefunded(msg.sender, gasRefundAmount);
+}
+
+function random() private view returns (uint256) {
+    return uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, nonce))) % 100;
+}
+
+function getRandomPercentage() private returns (uint256) {
+    nonce++;
+    return (random() % 11) + 10;
+}
